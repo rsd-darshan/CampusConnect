@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Profile</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9ecef;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #007bff;
+        }
+
+        .profile-header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .profile-header p {
+            font-size: 1.2rem;
+            margin: 5px 0;
+        }
+
+        .stars-count {
+            font-size: 1.5rem;
+            color: #FFD700;
+            margin-top: 10px;
+        }
+
+        .profile-details p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        h2 {
+            text-align: center;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        .helpers-section {
+            margin-top: 40px;
+        }
+
+        .helper-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .helper-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .helper-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .helper-info img {
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+
+        .helper-info strong {
+            font-size: 1.2rem;
+            color: #495057;
+        }
+
+        .helper-info p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+
+        .helper-card a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .helper-card a:hover {
+            text-decoration: underline;
+        }
+
+        .helper-actions button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .helper-actions button:hover {
+            background-color: #0056b3;
+        }
+
+        .helper-actions .star-btn {
+            background-color: #28a745;
+            margin-left: 15px;
+        }
+
+        .helper-actions .star-btn:hover {
+            background-color: #218838;
+        }
+
+        .no-helpers {
+            color: #6c757d;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <h1>{{ user.username }}'s Profile</h1>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Stars Received:</strong> {{ user.stars_received }} <span class="stars-count">★</span></p>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="profile-details">
+            <p><strong>SAT Score:</strong> {{ user.sat_score or 'Not provided' }}</p>
+            <p><strong>Universities to Apply:</strong> {{ user.universities_to_apply or 'None' }}</p>
+            <p><strong>Universities Applied:</strong> {{ user.universities_applied or 'None' }}</p>
+            <p><strong>Currently Studying At:</strong> {{ user.universities_studying or 'None' }}</p>
+            <p><strong>GPA for Class 9:</strong> {{ user.gpa_class_9 or 'Not provided' }}</p>
+            <p><strong>GPA for Class 10:</strong> {{ user.gpa_class_10 or 'Not provided' }}</p>
+            <p><strong>GPA for Class 11:</strong> {{ user.gpa_class_11 or 'Not provided' }}</p>
+            <p><strong>GPA for Class 12:</strong> {{ user.gpa_class_12 or 'Not provided' }}</p>
+        </div>
+
+        <!-- Helpers Section -->
+        <div class="helpers-section">
+            <h2>Helpers</h2>
+            
+            <h3>Available for LOR</h3>
+            {% if lor_helpers %}
+                <ul>
+                    {% for helper in lor_helpers %}
+                        <li class="helper-card">
+                            <div class="helper-info">
+                                <img src="{{ url_for('static', filename='images/' + (helper.profile_pic or 'default.jpg')) }}" alt="Profile Picture" width="50" height="50">
+                                <div>
+                                    <strong>{{ helper.username }}</strong>
+                                    <p>{{ helper.eca or 'No description available' }}</p>
+                                    <a href="{{ url_for('view_profile', user_id=helper.id) }}">View Profile</a>
+                                </div>
+                            </div>
+                            <div class="helper-actions">
+                                <button onclick="sendFriendRequest({{ helper.id }})">Send Friend Request</button>
+                                <button class="star-btn" onclick="giveStar({{ helper.id }})">Give Star ★</button>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-helpers">No users available for LOR.</p>
+            {% endif %}
+            
+            <h3>Available for Counsel</h3>
+            {% if counsel_helpers %}
+                <ul>
+                    {% for helper in counsel_helpers %}
+                        <li class="helper-card">
+                            <div class="helper-info">
+                                <img src="{{ url_for('static', filename='images/' + (helper.profile_pic or 'default.jpg')) }}" alt="Profile Picture" width="50" height="50">
+                                <div>
+                                    <strong>{{ helper.username }}</strong>
+                                    <p>{{ helper.eca or 'No description available' }}</p>
+                                    <a href="{{ url_for('view_profile', user_id=helper.id) }}">View Profile</a>
+                                </div>
+                            </div>
+                            <div class="helper-actions">
+                                <button onclick="sendFriendRequest({{ helper.id }})">Send Friend Request</button>
+                                <button class="star-btn" onclick="giveStar({{ helper.id }})">Give Star ★</button>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-helpers">No users available for counsel.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function sendFriendRequest(userId) {
+            fetch(`/send_friend_request/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    alert('Friend request sent!');
+                }
+            });
+        }
+
+        function giveStar(userId) {
+            fetch(`/give_star/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    alert('Star given!');
+                    location.reload();
+                } else if (response.status === 400) {
+                    alert('You have already given a star to this user!');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

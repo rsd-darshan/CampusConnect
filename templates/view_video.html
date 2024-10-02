@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+    <title>View Video</title>
+</head>
+<body>
+    <h1>{{ video.title }}</h1>
+    <p>{{ video.description }}</p>
+    <video width="320" height="240" controls>
+        <source src="{{ url_for('static', filename='videos/' + video.filename) }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <p>Uploaded by: {{ uploader.username }}</p>
+    
+    <h3>Reactions:</h3>
+    <form method="POST">
+        <button name="reaction" value="like">👍</button>
+        <button name="reaction" value="love">❤️</button>
+    </form>
+    
+    <h3>Comments:</h3>
+    <form method="POST">
+        <textarea name="comment" required></textarea><br>
+        <input type="submit" value="Comment">
+    </form>
+    <ul>
+    {% for comment in comments %}
+        <li>{{ comment.content }} - by {{ comment.user.username }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

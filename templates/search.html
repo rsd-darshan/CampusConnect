@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-bar button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .search-bar button:hover {
+            background-color: #0056b3;
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .user-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-card .actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .user-card .actions button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Users</h1>
+        <div class="search-bar">
+            <form method="POST" action="{{ url_for('search') }}">
+                <input type="text" name="search_query" placeholder="Enter username to search...">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        {% if results %}
+        <ul>
+            {% for result in results %}
+                <li class="user-card">
+                    <div class="user-info">
+                        <img src="{{ url_for('static', filename='images/' + (result.profile_pic or 'default.jpg')) }}" alt="Profile Picture">
+                        <strong>{{ result.username }}</strong>
+                    </div>
+                    <div class="actions">
+                        <button onclick="sendFriendRequest({{ result.id }})">Send Friend Request</button>
+                        <button onclick="giveStar({{ result.id }})">Give Star</button>
+                        <button onclick="requestLOR({{ result.id }})">Give LOR</button>
+                        <button onclick="requestCounsel({{ result.id }})">Counsel</button>
+                        <button onclick="startChat({{ result.id }})">Chat</button>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        {% else %}
+            <p>No users found.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function sendFriendRequest(userId) {
+            fetch(`/send_friend_request/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    alert('Friend request sent!');
+                } else {
+                    alert('Error sending friend request.');
+                }
+            });
+        }
+
+        function giveStar(receiverId) {
+    fetch(`/give_star/${receiverId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        if (response.status === 200) {
+            alert('Star given!');
+        } else {
+            alert('Error giving star.');
+        }
+    });
+}
+
+
+        function requestLOR(userId) {
+            fetch(`/request_lor/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    alert('Request to give LOR sent!');
+                } else {
+                    alert('Error requesting LOR.');
+                }
+            });
+        }
+
+        function requestCounsel(userId) {
+            fetch(`/request_counsel/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    alert('Request to counsel sent!');
+                } else {
+                    alert('Error requesting counsel.');
+                }
+            });
+        }
+
+        function startChat(userId) {
+            // This function can be updated to redirect to a chat room or initiate chat
+            window.location.href = `/chat/${userId}`;
+        }
+    </script>
+</body>
+</html>

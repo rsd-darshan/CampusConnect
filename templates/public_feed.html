@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Recommendation Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background-color: #1d3557;
+            color: white;
+            padding: 10px 15px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header .search-box {
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .header .search-box input {
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .header .search-box input:focus {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .header .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .header .nav-links a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 12px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .header .nav-links a:hover {
+            background-color: #457b9d;
+            border-radius: 20px;
+            transform: scale(1.05);
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-top: 80px; /* Adjust for header */
+        }
+
+        /* Sidebar (Profile & Friends) */
+        .sidebar {
+            width: 25%;
+            margin-right: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar .profile-info {
+            text-align: center;
+        }
+
+        .profile-info img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-info img:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease, padding-left 0.2s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #f0f0f0;
+            padding-left: 20px;
+        }
+
+        /* Main content (Feed) */
+        .main-content {
+            width: 50%;
+        }
+
+        /* Create Post Section */
+        .create-post {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .create-post:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .create-post textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            transition: border-color 0.2s ease;
+        }
+
+        .create-post textarea:focus {
+            border-color: #457b9d;
+            outline: none;
+        }
+
+        .create-post button {
+            background-color: #457b9d;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .create-post button:hover {
+            background-color: #1d3557;
+            transform: scale(1.05);
+        }
+
+        /* Post Card */
+        .post-card {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .post-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .post-card .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .post-header img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .post-header img:hover {
+            transform: scale(1.1);
+        }
+
+        .post-header .post-info h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .post-header .post-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #777;
+        }
+
+        /* Three-dot menu styling */
+        .menu-container {
+            position: relative;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .three-dots {
+            font-size: 24px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-menu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #ddd;
+        }
+
+        .show {
+            display: block;
+        }
+
+        .post-card video {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .post-card .actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .post-card .actions button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            color: #606770;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .post-card .actions button:hover {
+            color: #457b9d;
+            transform: scale(1.05);
+        }
+
+        .post-card .actions i {
+            margin-right: 5px;
+        }
+
+        /* Right Sidebar */
+        .sidebar-right {
+            width: 25%;
+            margin-left: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer */
+        .footer-nav {
+            background-color: #1d3557;
+            padding: 10px;
+            color: white;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer-nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .footer-nav a:hover {
+            color: #457b9d;
+            transform: scale(1.05);
+        }
+
+        /* Media Queries */
+        @media (max-width: 1000px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .sidebar, .main-content, .sidebar-right {
+                width: 100%;
+                margin: 0;
+            }
+
+            .sidebar, .sidebar-right {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">UniRec</div>
+        <div class="search-box">
+            <form action="{{ url_for('search') }}" method="POST">
+                <input type="text" name="search_query" placeholder="Search..." required>
+            </form>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('profile') }}">Profile</a>
+            <a href="{{ url_for('friend_list') }}">Friends</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="container">
+
+        <!-- Left Sidebar: Profile, Friends, Chat -->
+        <div class="sidebar">
+            <div class="profile-info">
+                <img src="{{ url_for('static', filename='images/' + (user_profile_pic or 'default.jpg')) }}" alt="Profile Picture">
+                <h3>{{ user.username }}</h3>
+                <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
+            </div>
+
+            <a href="{{ url_for('friend_list') }}">Friends</a>
+            <a href="{{ url_for('chat') }}">Chat</a>
+            <a href="{{ url_for('notifications') }}">Notifications</a>
+            <a href="{{ url_for('reels') }}">Reels</a>
+        </div>
+
+        <!-- Main Content: Video Feed -->
+        <div class="main-content">
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <button onclick="location.href='{{ url_for('upload_video') }}'">Upload Video</button>
+                <button onclick="location.href='{{ url_for('upload_photo') }}'">Upload Photo</button>
+            </div>
+
+            <!-- Create Post Section -->
+            <div class="create-post">
+                <textarea placeholder="What's on your mind, {{ user.username }}?"></textarea>
+                <button>Post</button>
+            </div>
+
+            {% if videos %}
+                {% for video in videos %}
+                    <div class="post-card">
+                        <div class="post-header">
+                            <img src="{{ url_for('static', filename='images/' + (user_profile_pic or 'default.jpg')) }}" alt="Profile Picture">
+                            <div class="post-info">
+                                <h3>{{ video.title }}</h3>
+                                <p>Posted by {{ user.username }}</p>
+                            </div>
+
+                            <!-- Three-dot menu for post options -->
+                            <div class="menu-container">
+                                <span class="three-dots" onclick="toggleMenu('{{ video.id }}')">&#x22EE;</span>
+                                <div class="dropdown-menu" id="menu-{{ video.id }}">
+                                    <a href="#" onclick="deleteVideo('{{ video.id }}')">Delete Video</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <video controls>
+                            <source src="{{ url_for('static', filename='videos/' + video.filename) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+
+                        <!-- Post Actions: Like, Comment, Share -->
+                        <div class="actions">
+                            <button onclick="reactPost({{ video.id }}, 'like')"><i class="fas fa-thumbs-up"></i> Like</button>
+                            <button onclick="reactPost({{ video.id }}, 'love')"><i class="fas fa-heart"></i> Love</button>
+                            <button onclick="reactPost({{ video.id }}, 'haha')"><i class="fas fa-laugh"></i> Haha</button>
+                            <button onclick="commentPost({{ video.id }})"><i class="fas fa-comment"></i> Comment</button>
+                            <button onclick="sharePost({{ video.id }})"><i class="fas fa-share"></i> Share</button>
+                        </div>
+
+                        <!-- Post Stats -->
+                        <div class="post-stats">
+                            <p id="reaction-count-{{ video.id }}">{{ video.reactions|length }} Reactions</p>
+                            <p>{{ video.comments|length }} Comments</p>
+                            <p>{{ video.shares|length }} Shares</p>
+                        </div>
+
+                        <!-- Comments Section -->
+                        <div class="comments">
+                            <ul>
+                                {% for comment in video.comments %}
+                                    <li>{{ comment.user.username }}: {{ comment.content }}</li>
+                                {% endfor %}
+                            </ul>
+
+                            <textarea id="comment-text-{{ video.id }}" placeholder="Add a comment"></textarea>
+                            <button onclick="commentPost({{ video.id }})">Post Comment</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No videos uploaded yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Right Sidebar: Notifications -->
+        <div class="sidebar-right">
+            <h3>Friend Suggestions</h3>
+            <p>No suggestions available at the moment.</p>
+        </div>
+
+    </div>
+
+    <!-- Footer Navigation -->
+    <div class="footer-nav">
+        <a href="{{ url_for('public_feed') }}">Home</a>
+        <a href="{{ url_for('reels') }}">Reels</a>
+        <a href="{{ url_for('friend_list') }}">Friends</a>
+        <a href="{{ url_for('profile') }}">Profile</a>
+        <a href="{{ url_for('helpers_section') }}">Helpers</a>
+        <a href="{{ url_for('ai_search') }}">AI Search</a>
+    </div>
+
+    <!-- JavaScript for Reactions, Comments, and Sharing -->
+    <script>
+    function toggleMenu(videoId) {
+        var menu = document.getElementById('menu-' + videoId);
+        menu.classList.toggle('show');
+    }
+
+    function deleteVideo(videoId) {
+        if (confirm('Are you sure you want to delete this video?')) {
+            fetch(`/delete_video/${videoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    alert('Video deleted!');
+                    window.location.reload(); // Reload the page after deletion
+                } else {
+                    alert('Error deleting video.');
+                }
+            });
+        }
+    }
+
+    function reactPost(videoId, reactionType) {
+        fetch(`/react_video/${videoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({reaction_type: reactionType}),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const reactionCountElement = document.getElementById(`reaction-count-${videoId}`);
+                reactionCountElement.textContent = `${data.reaction_count} Reactions`;
+            } else {
+                alert('Error adding reaction.');
+            }
+        });
+    }
+
+    function commentPost(videoId) {
+        const commentText = document.getElementById(`comment-text-${videoId}`).value;
+
+        fetch(`/comment_video/${videoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({comment: commentText}),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Comment added!');
+                location.reload();  // Reload page to show the new comment
+            } else {
+                alert('Error adding comment.');
+            }
+        });
+    }
+
+    function sharePost(videoId) {
+        fetch(`/share_video/${videoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Post shared!');
+                location.reload();  // Reload page to show the shared post
+            } else {
+                alert('Error sharing post.');
+            }
+        });
+    }
+    </script>
+
+</body>
+</html>

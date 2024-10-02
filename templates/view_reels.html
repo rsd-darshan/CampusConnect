@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Reels</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents body scroll */
+            font-family: Arial, sans-serif;
+            background-color: #000;
+        }
+
+        .reels-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow-y: scroll; /* Enables vertical scrolling */
+            scroll-snap-type: y mandatory; /* Enables snap scrolling */
+            scrollbar-width: none; /* Hides scrollbar for Firefox */
+        }
+
+        .reels-container::-webkit-scrollbar {
+            display: none; /* Hides scrollbar for Chrome, Safari, and Opera */
+        }
+
+        .reel {
+            width: 100%;
+            height: 100vh; /* Each reel takes up the full viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            scroll-snap-align: start; /* Snaps to start of the next reel */
+            position: relative;
+        }
+
+        .reel video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .reel-info {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .reel-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 16px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .reel-controls button {
+            padding: 8px 12px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .reel-controls button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .speed-menu {
+            display: none; /* Initially hidden */
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 4px;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .speed-menu button {
+            width: 100%;
+            padding: 8px;
+            background-color: transparent;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .speed-menu button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="reels-container">
+    {% for reel in reels %}
+    <div class="reel">
+        <video src="{{ url_for('static', filename='reels/' + reel.filename) }}" autoplay muted loop></video>
+        <div class="reel-info">
+            <p>{{ reel.title }}</p>
+            <p>{{ reel.description }}</p>
+        </div>
+        <div class="reel-controls">
+            <!-- Playback Speed Control -->
+            <button onclick="toggleSpeedMenu(this)">Speed</button>
+            <div class="speed-menu">
+                <button onclick="adjustSpeed(this, 0.5)">0.5x</button>
+                <button onclick="adjustSpeed(this, 1)">1x</button>
+                <button onclick="adjustSpeed(this, 1.5)">1.5x</button>
+                <button onclick="adjustSpeed(this, 2)">2x</button>
+            </div>
+            <!-- Interaction Controls -->
+            <button onclick="likeReel({{ reel.id }})">Like</button>
+            <button onclick="commentReel({{ reel.id }})">Comment</button>
+            <button onclick="shareReel({{ reel.id }})">Share</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // JavaScript functions for interaction
+    function likeReel(reelId) {
+        console.log('Liked reel with ID:', reelId);
+        // Add AJAX call or interaction logic here
+    }
+
+    function commentReel(reelId) {
+        console.log('Commented on reel with ID:', reelId);
+        // Add AJAX call or interaction logic here
+    }
+
+    function shareReel(reelId) {
+        console.log('Shared reel with ID:', reelId);
+        // Add AJAX call or interaction logic here
+    }
+
+    function adjustSpeed(button, speed) {
+        // Adjust the playback speed of the video in view
+        const video = button.closest('.reel').querySelector('video');
+        video.playbackRate = speed;
+        closeSpeedMenu(button.closest('.speed-menu'));
+    }
+
+    function toggleSpeedMenu(button) {
+        const speedMenu = button.nextElementSibling;
+        speedMenu.style.display = speedMenu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function closeSpeedMenu(menu) {
+        menu.style.display = 'none';
+    }
+
+    // Pause all videos when they are not in view and play the one in view
+    document.querySelector('.reels-container').addEventListener('scroll', function() {
+        document.querySelectorAll('.reel video').forEach(video => {
+            const rect = video.getBoundingClientRect();
+            if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
+    });
+
+    // Hide speed menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.reel-controls button')) {
+            document.querySelectorAll('.speed-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
+
+</script>
+
+</body>
+</html>

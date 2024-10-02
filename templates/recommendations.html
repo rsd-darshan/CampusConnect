@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+    <title>Recommendations</title>
+</head>
+<body>
+    <h1>Recommended Videos</h1>
+    <ul>
+    {% for video in videos %}
+        <li><a href="{{ url_for('view_video', video_id=video.id) }}">{{ video.title }}</a></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat - {{ group.name }}</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .messages {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            height: 300px;
+            overflow-y: scroll;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .message span {
+            font-weight: bold;
+        }
+        form {
+            display: flex;
+            align-items: center;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .add-member-section {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .add-member-section input[type="text"] {
+            width: calc(100% - 110px);
+            margin-right: 10px;
+        }
+        .add-member-section button {
+            width: 90px;
+        }
+        .suggestion-box {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            position: absolute;
+            background: #fff;
+            width: calc(100% - 100px);
+            z-index: 1;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .suggestion-box div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-box div:hover {
+            background-color: #f0f0f0;
+        }
+        .success-message, .error-message {
+            color: green;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .error-message {
+            color: red;
+        }
+        .profile-box {
+            display: none;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            margin-bottom: 20px;
+        }
+        .profile-box img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        .member-list {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .member-list h3 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .member-list ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .member-list li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .member-list button {
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Group Chat: {{ group.name }}</h1>
+
+    <!-- Success message -->
+    <div id="successMessage" class="success-message">User added to the group successfully!</div>
+    <div id="errorMessage" class="error-message">Error: Unable to remove user from group.</div>
+
+    <!-- Add Member Section -->
+    <div class="add-member-section">
+        <input type="text" id="searchUserInput" placeholder="Search for users..." autocomplete="off">
+        <button id="searchUserButton" disabled>Search</button>
+        <div class="suggestion-box" id="suggestionBox"></div>
+    </div>
+
+    <!-- User Profile Box -->
+    <div class="profile-box" id="profileBox">
+        <img id="profilePic" src="" alt="Profile Picture">
+        <h3 id="profileUsername"></h3>
+        <p id="profileEmail"></p>
+        <button id="addToGroupButton">Add to Group</button>
+    </div>
+
+    <div class="messages" id="messages">
+        {% for message in messages %}
+            <div class="message">
+                <span>{{ message.user.username }}:</span> {{ message.content }} <small>({{ message.timestamp.strftime('%H:%M:%S') }})</small>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form id="messageForm">
+        <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off">
+        <button type="submit">Send</button>
+    </form>
+
+    <!-- Group Member List -->
+    <div class="member-list">
+        <h3>Group Members</h3>
+        <ul id="memberList">
+            {% for member in group.members %}
+                <li>
+                    {{ member.username }}
+                    <button onclick="removeMember({{ member.id }})">Remove</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    const socket = io.connect();
+    let selectedUserId = null;
+
+    // Join the room for this group
+    socket.emit('join', 'group_{{ group.id }}');
+
+    // Handle new messages
+    socket.on('new_group_message', function(data) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.innerHTML = `<span>${data.username}:</span> ${data.message}`;
+        document.getElementById('messages').appendChild(messageDiv);
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; // Auto-scroll
+    });
+
+    // Send a message when the form is submitted
+    document.getElementById('messageForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = document.getElementById('messageInput').value;
+        socket.emit('send_group_message', { group_id: {{ group.id }}, message: message });
+        document.getElementById('messageInput').value = '';  // Clear input
+    });
+
+    // Search for users to add to the group
+    document.getElementById('searchUserInput').addEventListener('input', function() {
+        const query = this.value;
+        if (query.length > 1) {
+            fetch(`/search_user?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const suggestionBox = document.getElementById('suggestionBox');
+                    suggestionBox.innerHTML = '';
+                    if (data.users.length > 0) {
+                        suggestionBox.style.display = 'block';
+                        data.users.forEach(user => {
+                            const userDiv = document.createElement('div');
+                            userDiv.textContent = user.username;
+                            userDiv.dataset.userId = user.id;
+                            userDiv.addEventListener('click', function() {
+                                selectedUserId = user.id;
+                                document.getElementById('searchUserInput').value = user.username;
+                                document.getElementById('searchUserButton').disabled = false;
+                                suggestionBox.style.display = 'none';
+                            });
+                            suggestionBox.appendChild(userDiv);
+                        });
+                    } else {
+                        suggestionBox.style.display = 'none';
+                    }
+                });
+        } else {
+            document.getElementById('suggestionBox').style.display = 'none';
+        }
+    });
+
+    // Show user profile on search button click
+    document.getElementById('searchUserButton').addEventListener('click', function() {
+        if (selectedUserId) {
+            fetch(`/get_user_profile/${selectedUserId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('profilePic').src = `/static/images/${data.profile_pic}`;
+                    document.getElementById('profileUsername').textContent = data.username;
+                    document.getElementById('profileEmail').textContent = `Email: ${data.email}`;
+                    document.getElementById('profileBox').style.display = 'block';
+                });
+        }
+    });
+
+    // Add user to group
+    document.getElementById('addToGroupButton').addEventListener('click', function() {
+        if (selectedUserId) {
+            fetch('/add_member_to_group', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ group_id: {{ group.id }}, user_id: selectedUserId }),
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                        location.reload(); // Reload page to show the updated group member list
+                    }, 1500);
+                } else {
+                    alert('Error adding user to group.');
+                }
+            });
+        }
+    });
+
+    // Remove user from group
+    function removeMember(userId) {
+        fetch('/remove_member_from_group', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ group_id: {{ group.id }}, user_id: userId }),
+        })
+        .then(response => {
+            if (response.status === 200) {
+                location.reload(); // Reload page to update the member list
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('errorMessage').style.display = 'none';
+                }, 3000);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI University Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, textarea {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .results p {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>AI University Search</h2>
+
+        <!-- Option to search using current profile -->
+        <form method="POST">
+            <button type="submit" name="search_current_profile">Search Using Current Profile</button>
+        </form>
+
+        <!-- Option to input manually -->
+        <form method="POST">
+            <button type="submit" name="manual_input">Input Manually</button>
+        </form>
+
+        <!-- Manual input form (shown conditionally) -->
+        {% if manual_input %}
+        <form method="POST">
+            <input type="hidden" name="submit_manual_input" value="true">
+            
+            <label for="gpa">GPA:</label>
+            <input type="text" id="gpa" name="gpa" required>
+            
+            <label for="sat_score">SAT Score:</label>
+            <input type="text" id="sat_score" name="sat_score" required>
+            
+            <label for="eca">Extra-Curricular Activities:</label>
+            <textarea id="eca" name="eca" rows="3" required></textarea>
+            
+            <label for="essay">Essay:</label>
+            <textarea id="essay" name="essay" rows="5"></textarea>
+
+            <!-- New input fields for Major and Minor subjects -->
+            <label for="major">Major Subject:</label>
+            <input type="text" id="major" name="major" required>
+
+            <label for="minor">Minor Subject:</label>
+            <input type="text" id="minor" name="minor" required>
+
+            <button type="submit">Submit Manual Input</button>
+        </form>
+        {% endif %}
+
+        <!-- Display results if available -->
+        {% if results %}
+        <div class="results">
+            <h3>Recommended Universities</h3>
+            <p>{{ results | safe }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+        }
+
+        /* Ensure the form container adjusts based on screen size */
+        .profile-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            margin: 20px; /* Adds margin to ensure it's not stuck to the edges on small screens */
+        }
+
+        /* Center the title */
+        .profile-container h1 {
+            text-align: center;
+            color: #1d3557;
+            margin-bottom: 20px;
+        }
+
+        .profile-container label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Form input styles */
+        .profile-container input[type="text"],
+        .profile-container input[type="email"],
+        .profile-container textarea,
+        .profile-container input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease;
+        }
+
+        .profile-container input:focus,
+        .profile-container textarea:focus {
+            border-color: #457b9d;
+            outline: none;
+        }
+
+        /* Allow textarea to be resizable */
+        .profile-container textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Button styling */
+        .profile-container button {
+            width: 100%;
+            background-color: #1d3557;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .profile-container button:hover {
+            background-color: #457b9d;
+            transform: scale(1.05);
+        }
+
+        /* Profile picture upload */
+        .profile-container input[type="file"] {
+            padding: 10px;
+            border: none;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .profile-container input[type="file"]::file-selector-button {
+            background-color: #457b9d;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .profile-container input[type="file"]::file-selector-button:hover {
+            background-color: #1d3557;
+            transform: scale(1.05);
+        }
+
+        /* Make form responsive */
+        @media (max-width: 600px) {
+            .profile-container {
+                padding: 20px;
+                width: 90%; /* Make it adjust for smaller screens */
+            }
+
+            .profile-container h1 {
+                font-size: 24px; /* Slightly smaller title for smaller screens */
+            }
+
+            .profile-container button {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .profile-container label {
+                font-size: 14px; /* Adjust label size for smaller screens */
+            }
+        }
+
+        /* Ensure the form stays vertically scrollable if needed */
+        body {
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <h1>Edit Your Profile</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="{{ user.username }}">
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}">
+
+        <label for="gpa_class_9">GPA Class 9:</label>
+        <input type="text" id="gpa_class_9" name="gpa_class_9" value="{{ user.gpa_class_9 }}">
+
+        <label for="gpa_class_10">GPA Class 10:</label>
+        <input type="text" id="gpa_class_10" name="gpa_class_10" value="{{ user.gpa_class_10 }}">
+
+        <label for="gpa_class_11">GPA Class 11:</label>
+        <input type="text" id="gpa_class_11" name="gpa_class_11" value="{{ user.gpa_class_11 }}">
+
+        <label for="gpa_class_12">GPA Class 12:</label>
+        <input type="text" id="gpa_class_12" name="gpa_class_12" value="{{ user.gpa_class_12 }}">
+
+        <label for="sat_score">SAT Score:</label>
+        <input type="text" id="sat_score" name="sat_score" value="{{ user.sat_score }}">
+
+        <label for="eca">ECA:</label>
+        <input type="text" id="eca" name="eca" value="{{ user.eca }}">
+
+        <label for="essay">Essay:</label>
+        <textarea id="essay" name="essay">{{ user.essay }}</textarea>
+
+        <label for="universities_to_apply">Universities to Apply:</label>
+        <input type="text" id="universities_to_apply" name="universities_to_apply" value="{{ user.universities_to_apply }}">
+
+        <label for="universities_applied">Universities Applied:</label>
+        <input type="text" id="universities_applied" name="universities_applied" value="{{ user.universities_applied }}">
+
+        <label for="universities_studying">Currently Studying At:</label>
+        <input type="text" id="universities_studying" name="universities_studying" value="{{ user.universities_studying }}">
+
+        <label for="major_subject">Major Subject:</label>
+        <input type="text" id="major_subject" name="major_subject" value="{{ user.major_subject }}">
+
+        <label for="minor_subject">Minor Subject:</label>
+        <input type="text" id="minor_subject" name="minor_subject" value="{{ user.minor_subject }}">
+
+        <label for="profile_pic">Profile Picture:</label>
+        <input type="file" id="profile_pic" name="profile_pic">
+
+        <button type="submit">Update Profile</button>
+    </form>
+</div>
+
+</body>
+</html>

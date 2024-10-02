@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helpers Section</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .request {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .request p {
+            margin: 0 0 15px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+        }
+
+        .actions button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .actions button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .actions button.decline {
+            background-color: #dc3545;
+        }
+
+        .actions button.decline:hover {
+            background-color: #c82333;
+        }
+
+        /* No Requests Section */
+        .no-requests {
+            text-align: center;
+            color: #888;
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Helpers Section</h2>
+
+        <!-- LOR Requests Section -->
+        <h2>Pending LOR Requests</h2>
+        {% if lor_requests %}
+            {% for request in lor_requests %}
+                <div class="request">
+                    <p><strong>{{ request.sender.username }}</strong> has requested a Letter of Recommendation (LOR).</p>
+                    <div class="actions">
+                        <form method="POST" action="{{ url_for('respond_helper_request', request_id=request.id, response='accept') }}">
+                            <button type="submit">Accept</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('respond_helper_request', request_id=request.id, response='decline') }}">
+                            <button type="submit" class="decline">Decline</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-requests">No pending LOR requests.</p>
+        {% endif %}
+
+        <!-- Counsel Requests Section -->
+        <h2>Pending Counsel Requests</h2>
+        {% if counsel_requests %}
+            {% for request in counsel_requests %}
+                <div class="request">
+                    <p><strong>{{ request.sender.username }}</strong> has requested Counsel.</p>
+                    <div class="actions">
+                        <form method="POST" action="{{ url_for('respond_helper_request', request_id=request.id, response='accept') }}">
+                            <button type="submit">Accept</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('respond_helper_request', request_id=request.id, response='decline') }}">
+                            <button type="submit" class="decline">Decline</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-requests">No pending Counsel requests.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

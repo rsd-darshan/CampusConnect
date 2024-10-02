@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .profile, .friends, .feed, .notifications, .helpers, .reels {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+        }
+        .profile-info p {
+            margin: 10px 0;
+        }
+        .profile-info p strong {
+            color: #555;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        .actions button {
+            padding: 10px 15px;
+            margin-right: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .actions button:hover {
+            background-color: #0056b3;
+        }
+        .friends ul, .feed ul, .notifications ul {
+            list-style: none;
+            padding: 0;
+        }
+        .friends li, .feed li, .notifications li {
+            padding: 10px;
+            background-color: #f4f4f4;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .helpers, .reels {
+            margin-top: 20px;
+        }
+        .reels-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .reel {
+            width: 100%;
+            height: 200px;
+            background-color: #eee;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .reel:hover .play-icon {
+            opacity: 1;
+        }
+        .play-icon {
+            position: absolute;
+            color: white;
+            font-size: 48px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        nav {
+            margin-top: 20px;
+            text-align: center;
+        }
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome, {{ user.username }}</h2>
+        
+        <!-- Profile Section -->
+        <div class="section profile">
+            <h2>Your Profile</h2>
+            <img src="{{ url_for('static', filename='images/' + user_profile_pic) }}" alt="Profile Picture" width="150" height="150">
+            <div class="profile-info">
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>GPA for Class 9:</strong> {{ user.gpa_class_9 or 'Not provided' }}</p>
+                <p><strong>GPA for Class 10:</strong> {{ user.gpa_class_10 or 'Not provided' }}</p>
+                <p><strong>GPA for Class 11:</strong> {{ user.gpa_class_11 or 'Not provided' }}</p>
+                <p><strong>GPA for Class 12:</strong> {{ user.gpa_class_12 or 'Not provided' }}</p>
+                <p><strong>SAT Score:</strong> {{ user.sat_score or 'Not provided' }}</p>
+                <p><strong>Major Subject:</strong> {{ user.major_subject or 'Not provided' }}</p>
+                <p><strong>Minor Subject:</strong> {{ user.minor_subject or 'Not provided' }}</p>
+                <p><strong>Universities to Apply:</strong> {{ user.universities_to_apply or 'None' }}</p>
+                <p><strong>Universities Applied:</strong> {{ user.universities_applied or 'None' }}</p>
+                <p><strong>Currently Studying At:</strong> {{ user.universities_studying or 'None' }}</p>
+                <p><strong>Extra-Curricular Activities:</strong> {{ user.eca or 'None' }}</p>
+                <p><strong>Essay:</strong> {{ user.essay or 'None' }}</p>
+            </div>
+            <div class="actions">
+                <button onclick="location.href='{{ url_for('edit_profile') }}'">Edit Profile</button>
+                <button onclick="location.href='{{ url_for('upload_video') }}'">Upload Video</button>
+                <button onclick="location.href='{{ url_for('upload_reel') }}'">Upload Reel</button>
+            </div>
+        </div>
+        
+        <!-- Friends Section -->
+        <div class="section friends">
+            <h2>Friends</h2>
+            {% if friends %}
+                <ul>
+                    {% for friend in friends %}
+                        <li>
+                            <a href="{{ url_for('view_profile', user_id=friend.id) }}">{{ friend.username }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No friends added yet.</p>
+            {% endif %}
+            <form method="POST" action="{{ url_for('search') }}">
+                <input type="text" name="search_query" placeholder="Search for users..." required>
+                <button type="submit">Search</button>
+            </form>
+            <a href="{{ url_for('view_friend_requests') }}">View Friend Requests</a>
+        </div>
+
+        <!-- Feed Section -->
+        <div class="section feed">
+            <h2>Your Feed</h2>
+            {% if videos %}
+                <ul>
+                    {% for video in videos %}
+                        <li>{{ video.title }} - {{ video.description }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No content available.</p>
+            {% endif %}
+            <a href="{{ url_for('public_feed') }}">Go to Public Feed</a>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="section notifications">
+            <h2>Notifications</h2>
+            <p>No new notifications.</p>
+        </div>
+        
+        <!-- Helpers Section -->
+        <div class="section helpers">
+            <h2>Helpers</h2>
+            {% if helpers %}
+                <ul>
+                    {% for helper in helpers %}
+                        <li>{{ helper.username }} is ready to give LOR or Counsel</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No helpers available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Reels Section -->
+        <div class="section reels">
+            <h2>Reels</h2>
+            <div class="reels-container">
+                {% if reels %}
+                    {% for reel in reels %}
+                        <div class="reel">
+                            <i class="fas fa-play play-icon"></i>
+                            <video width="100%" height="100%" controls>
+                                <source src="{{ url_for('static', filename='reels/' + reel.filename) }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No reels uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav>
+            <a href="{{ url_for('helpers_section') }}">Helpers</a>
+            <a href="{{ url_for('reels') }}">Reels</a>
+            <a href="{{ url_for('ai_search') }}">AI Search</a>
+        </nav>
+    </div>
+</body>
+</html>

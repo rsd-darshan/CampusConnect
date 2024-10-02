@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Members to {{ group.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+        .container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        .search-results ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .search-results ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .search-results ul li:last-child {
+            border-bottom: none;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #3b5998;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #334d84;
+        }
+        .success-message {
+            padding: 10px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Add Members to {{ group.name }}</h1>
+
+    <!-- Success message -->
+    {% if added_member %}
+    <div class="success-message">
+        {{ added_member.username }} has been added to the group "{{ group.name }}"!
+    </div>
+    {% endif %}
+
+    <!-- Search Form -->
+    <form method="POST">
+        <input type="text" name="search_query" placeholder="Search for users..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Search Results -->
+    <div class="search-results">
+        {% if search_results %}
+            <ul>
+                {% for user in search_results %}
+                <li>
+                    {{ user.username }}
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="add_user_id" value="{{ user.id }}">
+                        <button type="submit">Add to Group</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        {% elif search_results is not none %}
+            <p>No users found.</p>
+        {% endif %}
+    </div>
+
+    <a href="{{ url_for('group_chat', group_id=group.id) }}">Back to Group Chat</a>
+</div>
+
+</body>
+</html>

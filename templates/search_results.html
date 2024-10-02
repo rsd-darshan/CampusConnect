@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .user-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .user-card a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .user-card a:hover {
+            text-decoration: underline;
+        }
+        .actions button {
+            margin: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .actions button:hover {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Results</h1>
+        {% if results %}
+        <ul>
+            {% for result in results %}
+                <li class="user-card">
+                    <div class="user-info">
+                        <img src="{{ url_for('static', filename='images/' + (result.profile_pic or 'default.jpg')) }}" alt="Profile Picture">
+                        <strong>{{ result.username }}</strong>
+                    </div>
+                    <div class="actions">
+                        {% if result in user.friends %}
+                            <!-- If the user is already a friend, show "Remove Friend" -->
+                            <button onclick="location.href='{{ url_for('remove_friend', friend_id=result.id) }}'">Remove Friend</button>
+                        {% elif result.id != user.id %}
+                            <!-- If the user is not a friend, show "Send Friend Request" -->
+                            <button onclick="location.href='{{ url_for('send_friend_request', receiver_id=result.id) }}'">Send Friend Request</button>
+                        {% endif %}
+                        <button onclick="giveStar({{ result.id }})">Give Star</button>
+                        <button onclick="requestLOR({{ result.id }})">Give LOR</button>
+                        <button onclick="requestCounsel({{ result.id }})">Counsel</button>
+                        <button onclick="startChat({{ result.id }})">Chat</button>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        {% else %}
+            <p>No users found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

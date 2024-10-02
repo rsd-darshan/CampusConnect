@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+    <title>Event Calendar</title>
+</head>
+<body>
+    <h1>Event Calendar</h1>
+    <ul>
+    {% for event in events %}
+        <li>{{ event.title }} on {{ event.date }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

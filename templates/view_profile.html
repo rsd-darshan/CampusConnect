@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Profile</title>
+    <style>
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-header img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-right: 20px;
+        }
+        .video-list, .post-list, .request-list {
+            margin-top: 20px;
+        }
+        .video-item, .post-item, .request-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-header">
+            <img src="{{ url_for('static', filename='images/' + (user.profile_pic or 'default.jpg')) }}" alt="Profile Picture">
+            <div>
+                <h2>{{ user.username }}</h2>
+                <p>{{ user.eca or 'No description available' }}</p>
+            </div>
+        </div>
+
+        <div class="video-list">
+            <h3>Uploaded Videos</h3>
+            {% if videos %}
+                {% for video in videos %}
+                    <div class="video-item">
+                        <h4>{{ video.title }}</h4>
+                        <video width="100%" controls>
+                            <source src="{{ url_for('static', filename='videos/' + video.filename) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p>{{ video.description }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No videos uploaded yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="post-list">
+            <h3>Posts</h3>
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="post-item">
+                        <h4>{{ post.title }}</h4>
+                        <p>{{ post.content }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No posts available.</p>
+            {% endif %}
+        </div>
+
+        <div class="request-list">
+            <h3>LOR Requests</h3>
+            {% if lor_requests %}
+                {% for request in lor_requests %}
+                    <div class="request-item">
+                        <p>{{ request.sender.username }} has requested a Letter of Recommendation.</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No LOR requests.</p>
+            {% endif %}
+        </div>
+
+        <div class="request-list">
+            <h3>Counsel Requests</h3>
+            {% if counsel_requests %}
+                {% for request in counsel_requests %}
+                    <div class="request-item">
+                        <p>{{ request.sender.username }} has requested counsel.</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No counsel requests.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

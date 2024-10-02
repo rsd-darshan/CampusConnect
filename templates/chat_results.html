@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+    {% if results %}
+        <ul>
+        {% for user in results %}
+            <li>{{ user.username }} - <a href="{{ url_for('view_profile', user_id=user.id) }}">View Profile</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No users found.</p>
+    {% endif %}
+</body>
+</html>

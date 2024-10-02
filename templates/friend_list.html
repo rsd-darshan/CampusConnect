@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Friends</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .friend-list-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #3b5998;
+            margin-bottom: 20px;
+        }
+
+        .friend-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .friend-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .friend-card img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+        }
+
+        .friend-card strong {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #3b5998;
+        }
+
+        .btn-danger {
+            background-color: #d9534f;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-primary:hover {
+            background-color: #334d84;
+        }
+
+        .btn-danger:hover {
+            background-color: #c9302c;
+        }
+
+        /* Friend requests button */
+        .view-requests {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .friend-list-container {
+                width: 95%;
+            }
+
+            .friend-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .friend-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: space-around;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="friend-list-container">
+    <h1>{{ user.username }}'s Friends</h1>
+
+    <div class="friend-list">
+        {% for friend in friends %}
+            <div class="friend-card">
+                <div class="friend-info">
+                    <img src="{{ url_for('static', filename='images/' + (friend.profile_pic or 'default.jpg')) }}" alt="Profile Picture">
+                    <strong>{{ friend.username }}</strong>
+                </div>
+                <div class="friend-actions">
+                    <!-- View Profile Button -->
+                    <a href="{{ url_for('view_profile', user_id=friend.id) }}" class="btn btn-primary">View Profile</a>
+
+                    <!-- Remove Friend Button -->
+                    <form action="{{ url_for('remove_friend', friend_id=friend.id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger">Remove Friend</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Option to view friend requests -->
+    <div class="view-requests">
+        <a href="{{ url_for('view_friend_requests') }}" class="btn btn-primary">View Friend Requests</a>
+    </div>
+</div>
+
+</body>
+</html>

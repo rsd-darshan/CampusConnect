@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friend Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #3b5998;
+        }
+
+        .request-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .request-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .request-card strong {
+            font-size: 18px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            transform: scale(1.05);
+        }
+
+        /* Accept and Decline Buttons */
+        button[name="action"][value="accept"] {
+            background-color: #28a745;
+            color: white;
+        }
+
+        button[name="action"][value="decline"] {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        button[name="action"][value="accept"]:hover {
+            background-color: #218838;
+        }
+
+        button[name="action"][value="decline"]:hover {
+            background-color: #c82333;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+
+            .request-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            form {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            button {
+                width: 48%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Friend Requests</h1>
+
+        <h2>Received Requests</h2>
+        {% if received_requests %}
+            <ul>
+                {% for request in received_requests %}
+                    <li class="request-card">
+                        <strong>{{ request.sender.username }}</strong>
+                        <form action="" method="POST">
+                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                            <button type="submit" name="action" value="accept">Accept</button>
+                            <button type="submit" name="action" value="decline">Decline</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No friend requests received.</p>
+        {% endif %}
+
+        <h2>Sent Requests</h2>
+        {% if sent_requests %}
+            <ul>
+                {% for request in sent_requests %}
+                    <li class="request-card">
+                        <strong>{{ request.receiver.username }}</strong>
+                        <p>Status: {{ request.status }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No friend requests sent.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

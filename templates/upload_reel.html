@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Reel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .view-reels {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .view-reels a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .view-reels a:hover {
+            text-decoration: underline;
+        }
+
+        /* Flash Messages Styling */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        ul li {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+
+            button, input {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload Your Reel</h2>
+        <form action="{{ url_for('upload_reel') }}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+            <input type="file" name="reel_file" id="reel_file" required>
+            <input type="text" name="reel_title" id="reel_title" placeholder="Reel Title" required>
+            <button type="submit">Upload Reel</button>
+        </form>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Option to View Reels -->
+        <div class="view-reels">
+            <a href="{{ url_for('view_reels') }}">View Reels</a>
+        </div>
+    </div>
+
+    <!-- Simple client-side validation -->
+    <script>
+        function validateForm() {
+            const reelFile = document.getElementById('reel_file').value;
+            const reelTitle = document.getElementById('reel_title').value.trim();
+
+            if (!reelFile || !reelTitle) {
+                alert("Please fill in both the reel file and title.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
