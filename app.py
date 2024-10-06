@@ -7,87 +7,11 @@ from flask_migrate import Migrate
 import os
 from flask import g
 from flask import flash
-from werkzeug.utils import secure_filename
-from datetime import datetime
-from sqlalchemy.exc import IntegrityError
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///advanced_platform.db'  # Update with your database URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/videos'
-app.config['UPLOAD_FOLDER'] = 'static/reels'
-app.secret_key = 'super_secret_key'
-
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-socketio = SocketIO(app)
-
-friends = db.Table('friends',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('friend_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
-)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    profile_pic = db.Column(db.String(120), nullable=True)
-    password_hash = db.Column(db.String(128))
-    
-    # New GPA fields for classes 9 to 12
-    gpa_class_9 = db.Column(db.String(5), nullable=True)
-    gpa_class_10 = db.Column(db.String(5), nullable=True)
-    gpa_class_11 = db.Column(db.String(5), nullable=True)
-    gpa_class_12 = db.Column(db.String(5), nullable=True)
-    
-    # Existing fields
-    sat_score = db.Column(db.String(10), nullable=True)
-    gpa = db.Column(db.String(5), nullable=True)
-    eca = db.Column(db.String(120), nullable=True)
-    essay = db.Column(db.Text, nullable=True)
-    
-    # New fields for university status
-    universities_to_apply = db.Column(db.Text, nullable=True)  # Comma-separated list of universities
-    universities_applied = db.Column(db.Text, nullable=True)   # Comma-separated list of universities
-    universities_studying = db.Column(db.String(120), nullable=True)  # Currently studying at
-
-    # New fields for Major and Minor
-    major_subject = db.Column(db.String(100), nullable=True)
-    minor_subject = db.Column(db.String(100), nullable=True)
-
-    stars_received = db.Column(db.Integer, default=0)
-
-    # Adding the friends relationship
-    friends = db.relationship(
-        'User', 
-        secondary=friends,
-        primaryjoin=(friends.c.user_id == id),
-        secondaryjoin=(friends.c.friend_id == id),
-        backref=db.backref('user_friends', lazy='dynamic'),
-        lazy='dynamic'
-    )
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-    
-    def is_friends_with(self, user):
-        return user in self.friends
-
-
-
-
-
-class Star(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    giver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # The user who gives the star
-    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # The user who receives the star
-
-    giver = db.relationship('User', foreign_keys=[giver_id], backref='given_stars')
-    receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_stars')
 
 
 class HelperRequest(db.Model):
@@ -201,111 +125,6 @@ class FriendRequest(db.Model):
     receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_requests')
 
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    title = db.Column(db.String(120), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-
-    user = db.relationship('User', backref=db.backref('posts', lazy=True))
-
-
-class Event(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
-
-# Chat rooms and users tracking
-users_in_rooms = {}
-
-
-
-# Routes
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-# Example: Register a new user
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        
-        # Check if the email already exists
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return 'Email already exists. Please choose a different email.'
-
-        # Check if the username already exists
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            return 'Username already exists. Please choose a different username.'
-
-        # Create and save the new user
-        new_user = User(username=username, email=email)
-        new_user.set_password(password)  # Hash the password
-        db.session.add(new_user)
-        try:
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-            return 'An error occurred while trying to register. Please try again.'
-
-        session['username'] = username
-        session['friends'] = []  # Initialize friends list as empty for a new user
-        return redirect(url_for('public_feed'))
-
-    return render_template('register.html')
-
-
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            session['username'] = username
-            session['friends'] = [friend.username for friend in user.friends]  # Initialize friends list in session
-            return redirect(url_for('public_feed'))  # Redirect to public feed instead of dashboard
-        else:
-            return 'Invalid credentials'
-    return render_template('login.html')
-
-
-
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if 'username' in session:
-        user = User.query.filter_by(username=session['username']).first()
-        if request.method == 'POST':
-            user.sat_score = request.form['sat_score']
-            user.gpa = request.form['gpa']
-            user.eca = request.form['eca']
-            user.essay = request.form['essay']
-            user.major_subject = request.form['major_subject']  # New field for Major
-            user.minor_subject = request.form['minor_subject']  # New field for Minor
-            
-            # Handle profile picture upload
-            if 'profile_pic' in request.files:
-                profile_pic = request.files['profile_pic']
-                if profile_pic:
-                    filename = secure_filename(profile_pic.filename)
-                    profile_pic.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    user.profile_pic = filename
-            
-            db.session.commit()  # Save all updates to the database
-            return redirect(url_for('profile'))
-        
-        return render_template('profile.html', user=user)
-    return redirect(url_for('login'))
-
-
 
 
 
@@ -404,24 +223,6 @@ def give_star(receiver_id):
     db.session.commit()
 
     return jsonify({'status': 'success'}), 200  # Success: Star given
-
-
-@app.route('/create_group', methods=['POST'])
-def create_group():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    group_name = request.form.get('group_name')
-    user = User.query.filter_by(username=session['username']).first()
-
-    if group_name and user:
-        new_group = Group(name=group_name)
-        new_group.members.append(user)  # Add the creator to the group
-        db.session.add(new_group)
-        db.session.commit()
-        return redirect(url_for('chat'))
-    else:
-        return "Error creating group", 400
 
 
 @app.route('/remove_member_from_group', methods=['POST'])
@@ -533,10 +334,6 @@ def ai_search():
     return render_template('ai_search.html', user=user, results=results, manual_input=manual_input)
 
 
-
-
-
-
 # Route to view received LOR and Counsel requests
 @app.route('/helpers_section')
 def helpers_section():
@@ -550,23 +347,6 @@ def helpers_section():
     counsel_requests = HelperRequest.query.filter_by(receiver_id=user.id, helper_type='counsel', status='pending').all()
 
     return render_template('helpers_section.html', lor_requests=lor_requests, counsel_requests=counsel_requests)
-
-# Route to handle response to LOR or Counsel requests
-@app.route('/respond_helper_request/<int:request_id>/<response>', methods=['POST'])
-def respond_helper_request(request_id, response):
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    helper_request = HelperRequest.query.get_or_404(request_id)
-    
-    if response == 'accept':
-        helper_request.status = 'accepted'
-    else:
-        helper_request.status = 'declined'
-
-    db.session.commit()
-    return redirect(url_for('helpers_section'))
-
 
 
 
@@ -756,75 +536,6 @@ def upload_reel():
 
     return render_template('upload_reel.html')
 
-@app.route('/public_feed')
-def public_feed():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    user = User.query.filter_by(username=session['username']).first()
-    videos = Video.query.order_by(Video.id.desc()).all()  # Fetch all videos in descending order
-
-    # Fetch received friend requests
-    received_requests = FriendRequest.query.filter_by(receiver_id=user.id, status='pending').all()
-
-    # Define user_profile_pic
-    user_profile_pic = user.profile_pic if user.profile_pic else 'default.jpg'
-
-    # Pass user_profile_pic to the template
-    return render_template('public_feed.html', user=user, user_profile_pic=user_profile_pic, videos=videos, received_requests=received_requests)
-
-
-@app.route('/upload_video', methods=['GET', 'POST'])
-def upload_video():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        title = request.form['title']
-        description = request.form['description']
-        category = request.form['category']
-        tags = request.form['tags']
-        privacy = request.form['privacy']
-        video_file = request.files['video_file']
-        thumbnail = request.files.get('thumbnail')
-
-        # Ensure the directory exists
-        video_dir = os.path.join(app.config['UPLOAD_FOLDER'])
-        if not os.path.exists(video_dir):
-            os.makedirs(video_dir)
-
-        if video_file:
-            # Secure the filename and save the video file
-            filename = secure_filename(video_file.filename)
-            video_path = os.path.join(video_dir, filename)
-            video_file.save(video_path)
-
-            # Handle the thumbnail
-            if thumbnail:
-                thumbnail_filename = secure_filename(thumbnail.filename)
-                thumbnail_path = os.path.join(app.config['UPLOAD_FOLDER'], thumbnail_filename)
-                thumbnail.save(thumbnail_path)
-            else:
-                # Generate thumbnail from video if none provided (using a placeholder for now)
-                thumbnail_filename = 'default_thumbnail.jpg'
-
-            uploader = User.query.filter_by(username=session['username']).first()
-            new_video = Video(
-                title=title, 
-                description=description, 
-                filename=filename, 
-                category=category, 
-                uploader_id=uploader.id,
-                tags=tags,
-                thumbnail=thumbnail_filename,
-                privacy=privacy
-            )
-            db.session.add(new_video)
-            db.session.commit()
-            return redirect(url_for('view_video', video_id=new_video.id))
-    
-    return render_template('upload_video.html')
-
 
 @app.route('/friend_list')
 def friend_list():
@@ -950,29 +661,6 @@ def comment_video(video_id):
 def view_reels():
     reels = Reel.query.all()  # Fetch all uploaded reels from the database
     return render_template('view_reels.html', reels=reels)
-
-@app.route('/video/<int:video_id>', methods=['GET', 'POST'])
-def view_video(video_id):
-    video = Video.query.get_or_404(video_id)
-    uploader = User.query.get(video.uploader_id)
-    comments = Comment.query.filter_by(video_id=video.id).all()
-    
-    if request.method == 'POST':
-        if 'reaction' in request.form:
-            reaction_type = request.form['reaction']
-            user = User.query.filter_by(username=session['username']).first()
-            new_reaction = Reaction(video_id=video.id, user_id=user.id, reaction_type=reaction_type)
-            db.session.add(new_reaction)
-            db.session.commit()
-        elif 'comment' in request.form:
-            comment_content = request.form['comment']
-            user = User.query.filter_by(username=session['username']).first()
-            new_comment = Comment(video_id=video.id, user_id=user.id, content=comment_content)
-            db.session.add(new_comment)
-            db.session.commit()
-    
-    return render_template('view_video.html', video=video, uploader=uploader, comments=comments)
-
 
 
 @app.route('/notifications')
@@ -1227,80 +915,6 @@ def add_friend(friend_id):
 
 
 
-@socketio.on('join')
-def on_join(room):
-    username = session['username']
-    join_room(room)
-    if room not in users_in_rooms:
-        users_in_rooms[room] = []
-    users_in_rooms[room].append(username)
-
-    # Remove the send message here to stop broadcasting the system message
-    # socketio.emit('newMessage', {'username': 'System', 'text': f'{username} has joined the room.'}, room=room)
-
-    # Emit updated user list without sending a message to the chat
-    socketio.emit('updateUsersList', users_in_rooms[room], room=room)
-
-
-@socketio.on('leave')
-def on_leave(room):
-    username = session['username']
-    leave_room(room)
-    users_in_rooms[room].remove(username)
-
-    # Remove the send message here to stop broadcasting the system message
-    # socketio.emit('newMessage', {'username': 'System', 'text': f'{username} has left the room.'}, room=room)
-
-    # Emit updated user list without sending a message to the chat
-    socketio.emit('updateUsersList', users_in_rooms[room], room=room)
-
-
-
-@socketio.on('send_private_message')
-def handle_private_message(data):
-    room = data['room']
-    message_content = data['message']
-    sender = session['username']
-
-    # Get the current user (sender)
-    current_user = User.query.filter_by(username=sender).first()
-
-    # Find the chat recipient based on the room identifier
-    # You can extract recipient_id from the room name or pass it explicitly
-    room_users = room.split('_')[1:]  # Get user ids from room name
-    recipient_id = room_users[1] if str(current_user.id) == room_users[0] else room_users[0]
-    recipient = User.query.get(recipient_id)
-
-    # Save the new message to the database
-    new_message = PrivateMessage(
-        content=message_content,
-        sender_id=current_user.id,
-        receiver_id=recipient.id
-    )
-    db.session.add(new_message)
-    db.session.commit()
-
-    # Send the message to both users in real-time
-    socketio.emit('receive_private_message', {
-        'sender': current_user.username,
-        'message': message_content,
-        'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        'room': room
-    }, room=room)
-
-
-
-
-@socketio.on('sendMessage')
-def handle_message(data):
-    room = data['room']
-    username = session['username']
-    message = data['text']
-    timestamp = datetime.now().strftime('%H:%M:%S')
-    send({'username': username, 'text': message, 'time': timestamp}, room=room)
-
-
-# Define your routes here...
 # [Your route code here...]
 
 if __name__ == '__main__':
