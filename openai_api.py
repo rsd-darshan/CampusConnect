@@ -1,7 +1,7 @@
 import openai
 
 # Replace with your OpenAI API key
-openai.api_key = '***OPENAI API KEY***'
+openai.api_key = '***OPENAI API KEY***'asda
 
 def get_university_recommendations(profile_summary):
     try:
